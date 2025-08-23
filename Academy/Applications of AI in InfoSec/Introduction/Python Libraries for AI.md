@@ -131,6 +131,7 @@ if torch.cuda.is_available():
 ```
 
 ### Building Models with PyTorch
+`PyTorch` provides a flexible and intuitive interface for building and training deep learning models. The `torch.nn` module contains various layers and modules for constructing neural networks.
 The `Sequential` API allows building models layer by layer, adding each layer sequentially.
 ```python
 import torch.nn as nn
@@ -141,4 +142,132 @@ model = nn.Sequential(
     nn.Linear(128, 10),
     nn.Softmax(dim=1)
 )
+```
+
+The `Module` class provides more flexibility for building complex models with non-linear topologies, shared layers, and multiple inputs/outputs.
+
+```python
+import torch.nn as nn
+
+class CustomModel(nn.Module):
+    def __init__(self):
+        super(CustomModel, self).__init__()
+        self.layer1 = nn.Linear(784, 128)
+        self.relu = nn.ReLU()
+        self.layer2 = nn.Linear(128, 10)
+        self.softmax = nn.Softmax(dim=1)
+
+    def forward(self, x):
+        x = self.layer1(x)
+        x = self.relu(x)
+        x = self.layer2(x)
+        x = self.softmax(x)
+        return x
+
+model = CustomModel()
+```
+
+### Training and Evaluation
+`PyTorch` provides tools for training and evaluating models.
+
+`Optimizers` are algorithms that adjust the model's parameters during training to minimize the loss function. `PyTorch` offers various optimizers:
+
+- `Adam`
+- `SGD` (Stochastic Gradient Descent)
+- `RMSprop`
+
+```python
+import torch.optim as optim
+
+optimizer = optim.Adam(model.parameters(), lr=0.001)
+```
+
+`Loss Functions` measure the difference between the model's predictions and the actual target values. `PyTorch` provides a variety of loss functions:
+
+- `CrossEntropyLoss` : For multi-class classification.
+- `BCEWithLogitsLoss` : For binary classification.
+- `MSELoss` : For regression.
+
+```python
+import torch.nn as nn
+
+loss_fn = nn.CrossEntropyLoss()
+```
+
+`Metrics` evaluate the model's performance during training and testing.
+
+- `Accuracy`
+- `Precision`
+- `Recall`
+
+```python
+def accuracy(output, target):
+    _, predicted = torch.max(output, 1)
+    correct = (predicted == target).sum().item()
+    return correct / len(target)
+```
+
+The training loop updates the model's parameters based on the training data.
+
+```python
+import torch
+
+epochs = 10
+num_batches = 100
+
+for epoch in range(epochs):
+    for batch in range(num_batches):
+        # Get batch of data
+        x_batch, y_batch = get_batch(batch)
+        
+        # Forward pass
+        y_pred = model(x_batch)
+        
+        # Calculate loss
+        loss = loss_fn(y_pred, y_batch)
+        
+        # Backward pass and optimization
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()
+        
+        # Optional: print loss or other metrics
+        if batch % 10 == 0:
+            print(f'Epoch [{epoch+1}/{epochs}], Batch [{batch+1}/{num_batches}], Loss: {loss.item():.4f}')
+```
+
+### Data Loading and Preprocessing
+
+`PyTorch` provides the `torch.utils.data.Dataset` and `DataLoader` classes for handling data loading and preprocessing.
+
+```python
+from torch.utils.data import Dataset, DataLoader
+
+class CustomDataset(Dataset):
+    def __init__(self, data, labels):
+        self.data = data
+        self.labels = labels
+
+    def __len__(self):
+        return len(self.data)
+
+    def __getitem__(self, idx):
+        return self.data[idx], self.labels[idx]
+
+# Example usage
+dataset = CustomDataset(data, labels)
+dataloader = DataLoader(dataset, batch_size=32, shuffle=True)
+```
+
+### Model Saving and Loading
+`PyTorch` allows models to be saved and loaded for inference or further training
+
+```python
+# Save model
+torch.save(model.state_dict(), 'model.pth')
+
+# Load model
+model = CustomModel()
+model.load_state_dict(torch.load('model.pth'))
+model.eval()  # Set the model to evaluation mode
 ```
